@@ -1,0 +1,77 @@
+# Dasharo Tools Suite TUI Configuration Example
+
+header:
+  title: " Dasharo Tools Suite Script ${TOOL_VERSION:-2.7.1} "
+  subtitle: " (c) Dasharo <contact@dasharo.com> "
+  link: "https://github.com/Dasharo/dasharo-issues"
+
+sections:
+  - label: "HARDWARE INFORMATION"
+    entries:
+      - label: "System Inf."
+        value: "${SYSTEM_INFO:-Not Available}"
+      - label: "Baseboard Inf."
+        value: "${BASEBOARD_INFO:-Not Available}"
+      - label: "CPU Inf."
+        value: "${CPU_INFO:-Not Available}"
+      - label: "RAM Virtual"
+        value: "${RAM_INFO:-Not Specified}"
+
+  - label: "FIRMWARE INFORMATION"
+    entries:
+      - label: "BIOS Inf."
+        value: "${BIOS_INFO:-Not Available}"
+
+  - label: "DPP credentials"
+    condition: "${SHOW_DPP_CREDS}"
+    entries:
+      - label: "Email"
+        value: "${DPP_EMAIL:-***************}"
+      - label: "Password"
+        value: "${DPP_PASSWORD:-***************}"
+
+menu:
+  - key: "1"
+    label: "Dasharo HCL report"
+    callback: "examples/callbacks/hcl_report.sh"
+
+  - key: "2"
+    label: "Update Dasharo Firmware"
+    callback: "examples/callbacks/update_firmware.sh"
+
+  - key: "4"
+    label: "Edit your DPP keys"
+    callback: "examples/callbacks/edit_dpp_keys.sh"
+
+  - key: "6"
+    label: "Transition Dasharo Firmware"
+    callback: "examples/callbacks/transition_firmware.sh"
+
+  - key: "7"
+    label: "Fuse platform"
+    callback: "examples/callbacks/fuse_platform.sh"
+
+footer:
+  - key: "R"
+    label: "reboot"
+    callback: "examples/callbacks/reboot.sh"
+
+  - key: "P"
+    label: "poweroff"
+    callback: "examples/callbacks/poweroff.sh"
+
+  - key: "S"
+    label: "enter shell"
+    callback: "examples/callbacks/shell.sh"
+
+  - key: "K"
+    label: "launch SSH server"
+    callback: "examples/callbacks/ssh_server.sh"
+
+  - key: "L"
+    label: "enable sending DTS logs"
+    callback: "examples/callbacks/enable_logs.sh"
+
+  - key: "C"
+    label: "display DPP credentials"
+    callback: "examples/callbacks/display_dpp.sh"

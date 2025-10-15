@@ -1,0 +1,21 @@
+# Demo showing dynamic footer labels
+
+header:
+  title: " Dynamic Footer Demo "
+  subtitle: " Press K to toggle SSH server state "
+
+sections:
+  - label: "SYSTEM STATUS"
+    entries:
+      - label: "SSH Server"
+        value: "${SSH_STATUS}"
+
+menu:
+  - key: "1"
+    label: "Example action"
+    callback: "examples/callbacks/hcl_report.sh"
+
+footer:
+  - key: "K"
+    label: "${SSH_ACTION}"
+    callback: "examples/callbacks/toggle_ssh.sh"
