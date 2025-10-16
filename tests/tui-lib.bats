@@ -93,44 +93,8 @@ EOF
     [ "$status" -eq 0 ]
 }
 
-@test "tui_query retrieves values from loaded config" {
-    # Skip if yq is not installed
-    if ! command -v yq &>/dev/null; then
-        skip "yq not installed"
-    fi
-
-    # Create and load test YAML
-    cat > "$TEST_DIR/test.yaml" <<EOF
-header:
-  title: "Test Title"
-EOF
-
-    tui_load_config "$TEST_DIR/test.yaml"
-    run tui_query ".header.title"
-    [ "$status" -eq 0 ]
-    [ "$output" = "Test Title" ]
-}
-
-@test "tui_query_length returns correct array length" {
-    # Skip if yq is not installed
-    if ! command -v yq &>/dev/null; then
-        skip "yq not installed"
-    fi
-
-    # Create and load test YAML
-    cat > "$TEST_DIR/test.yaml" <<EOF
-menu:
-  - key: "1"
-    label: "Option 1"
-  - key: "2"
-    label: "Option 2"
-EOF
-
-    tui_load_config "$TEST_DIR/test.yaml"
-    run tui_query_length ".menu"
-    [ "$status" -eq 0 ]
-    [ "$output" = "2" ]
-}
+# Tests removed: tui_query and tui_query_length no longer exist
+# Config data is now stored in bash arrays after loading
 
 # Test: Terminal control functions
 @test "tui_clear_screen outputs ANSI escape sequence" {
@@ -261,8 +225,8 @@ EOF
     [[ "$output" == *"Version 1.0"* ]]
 }
 
-# Test: Information section rendering
-@test "tui_render_info_section renders section with entries" {
+# Test: Information sections rendering
+@test "tui_render_info_sections renders sections with entries" {
     # Skip if yq is not installed
     if ! command -v yq &>/dev/null; then
         skip "yq not installed"
@@ -277,7 +241,7 @@ sections:
 EOF
 
     tui_load_config "$TEST_DIR/test.yaml"
-    run tui_render_info_section 0
+    run tui_render_info_sections
     [ "$status" -eq 0 ]
     [[ "$output" == *"SYSTEM INFO"* ]]
     [[ "$output" == *"OS"* ]]
@@ -328,7 +292,7 @@ EOF
 }
 
 # Test: Conditional rendering
-@test "tui_render_info_section skips section when condition is false" {
+@test "tui_render_info_sections skips section when condition is false" {
     # Skip if yq is not installed
     if ! command -v yq &>/dev/null; then
         skip "yq not installed"
@@ -345,12 +309,12 @@ sections:
 EOF
 
     tui_load_config "$TEST_DIR/test.yaml"
-    run tui_render_info_section 0
+    run tui_render_info_sections
     [ "$status" -eq 0 ]
     [[ "$output" != *"HIDDEN SECTION"* ]]
 }
 
-@test "tui_render_info_section shows section when condition is true" {
+@test "tui_render_info_sections shows section when condition is true" {
     # Skip if yq is not installed
     if ! command -v yq &>/dev/null; then
         skip "yq not installed"
@@ -367,7 +331,7 @@ sections:
 EOF
 
     tui_load_config "$TEST_DIR/test.yaml"
-    run tui_render_info_section 0
+    run tui_render_info_sections
     [ "$status" -eq 0 ]
     [[ "$output" == *"VISIBLE SECTION"* ]]
 }

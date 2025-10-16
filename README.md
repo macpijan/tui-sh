@@ -6,12 +6,14 @@ A simple bash library for creating text-based user interfaces with immediate key
 
 - YAML-based configuration for menu layouts
 - Immediate keypress handling (no need to press Enter)
-- ANSI colors and styling
+- ANSI colors and styling (DTS-compatible color scheme)
 - Serial port compatible
 - Dynamic content from environment variables
 - Conditional section/entry display
 - Callback system for menu actions
 - Full clear & redraw rendering
+- 80-column terminal support with auto-wrapping footer
+- Helper functions for custom rendering
 
 ## Requirements
 
@@ -250,13 +252,33 @@ Renders footer actions.
 ### Configuration Functions
 
 #### `tui_load_config "file.yaml"`
-Loads a YAML configuration file.
+Loads a YAML configuration file and parses it into bash arrays for fast rendering.
 
-#### `tui_query "jq.path"`
-Query configuration using jq syntax.
+### Helper Functions
 
-#### `tui_query_length "jq.path"`
-Get length of array in configuration.
+#### `tui_visible_length "text"`
+Calculate visible text length (stripping ANSI escape codes).
+
+#### `tui_generate_border length [char]`
+Generate a border string of specified length (default char: `*`).
+
+#### `tui_echo_normal/red/yellow/green/blue "text"`
+Print colored text using ANSI escape codes.
+
+#### `tui_print_warning "message"` / `tui_print_error "message"` / `tui_print_success "message"`
+Print styled status messages.
+
+#### `tui_print_border`
+Print a full-width border line (respects TUI_MAX_WIDTH=80).
+
+#### `tui_print_section_header "label"`
+Print a section header with borders.
+
+#### `tui_print_section_entry "label" "value"`
+Print a section entry (label: value format).
+
+#### `tui_print_menu_option "key" "label"`
+Print a menu option line.
 
 ### Utility Functions
 

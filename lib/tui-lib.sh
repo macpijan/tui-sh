@@ -564,9 +564,43 @@ tui_stop() {
 }
 
 # Export functions for use in other scripts
+
+# Terminal control
 export -f tui_clear_screen
 export -f tui_hide_cursor
 export -f tui_show_cursor
+
+# Utility functions
+export -f tui_visible_length
+export -f tui_generate_border
+
+# Color echo functions
+export -f tui_echo_normal
+export -f tui_echo_red
+export -f tui_echo_yellow
+export -f tui_echo_green
+export -f tui_echo_blue
+
+# Status message functions
+export -f tui_print_warning
+export -f tui_print_error
+export -f tui_print_success
+
+# Border and layout functions
+export -f tui_print_border
+export -f tui_print_border_prefix
+
+# Section rendering functions
+export -f tui_print_section_header
+export -f tui_print_section_entry
+
+# Menu rendering functions
+export -f tui_print_menu_option
+
+# Footer rendering functions
+export -f tui_print_footer_action
+
+# Core functions
 export -f tui_expand_vars
 export -f tui_check_condition
 export -f tui_load_config
