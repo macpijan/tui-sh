@@ -10,7 +10,7 @@ readonly TUI_YELLOW='\033[0;33m'
 readonly TUI_BLUE='\033[0;36m'  # Cyan, used for borders (matches DTS BLUE)
 
 # Terminal width configuration
-readonly TUI_MAX_WIDTH=80  # Maximum width for borders and footer wrapping
+readonly TUI_MAX_WIDTH=60  # Maximum width for borders and footer wrapping
 
 # Global variables
 TUI_CONFIG_FILE=""
