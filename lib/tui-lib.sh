@@ -477,6 +477,8 @@ tui_find_menu_callback() {
 
         if [[ "$menu_key" == "$key" ]]; then
             if tui_check_condition "$condition"; then
+                # Expand environment variables in callback path
+                callback=$(tui_expand_vars "$callback")
                 echo "$callback"
                 return 0
             fi
@@ -496,6 +498,8 @@ tui_find_footer_callback() {
 
         if [[ "$footer_key" == "$key" ]]; then
             if tui_check_condition "$condition"; then
+                # Expand environment variables in callback path
+                callback=$(tui_expand_vars "$callback")
                 echo "$callback"
                 return 0
             fi

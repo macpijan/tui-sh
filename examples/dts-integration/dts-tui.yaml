@@ -1,0 +1,95 @@
+header:
+  title: " Dasharo Tools Suite Script ${DTS_VERSION} "
+  subtitle: " (c) Dasharo <contact@dasharo.com> "
+  link: "https://github.com/Dasharo/dasharo-issues"
+
+sections:
+  - label: "HARDWARE INFORMATION"
+    entries:
+      - label: "System Inf."
+        value: "${SYSTEM_VENDOR} ${SYSTEM_MODEL}"
+      - label: "Baseboard Inf."
+        value: "${SYSTEM_VENDOR} ${BOARD_MODEL}"
+      - label: "CPU Inf."
+        value: "${CPU_VERSION}"
+      - label: "RAM Virtual"
+        value: "${RAM_INFO:-Not Specified}"
+
+  - label: "FIRMWARE INFORMATION"
+    entries:
+      - label: "BIOS Inf."
+        value: "${BIOS_VENDOR} ${BIOS_VERSION}"
+
+  - label: "DPP credentials"
+    condition: "${DPP_IS_LOGGED}"
+    entries:
+      - label: "Email"
+        value: "${DPP_EMAIL_DISPLAY}"
+      - label: "Password"
+        value: "${DPP_PASSWORD_DISPLAY}"
+
+  - label: "SSH status: ${SSH_STATUS}"
+    condition: "${SSH_ACTIVE}"
+    entries:
+      - label: "IP"
+        value: "${SSH_IP}"
+
+menu:
+  - key: "1"
+    label: "Dasharo HCL report"
+    callback: "${SCRIPT_DIR}/callbacks/hcl-report.sh"
+
+  - key: "2"
+    label: "${DASHARO_FIRMWARE_LABEL}"
+    callback: "${SCRIPT_DIR}/callbacks/dasharo-firmware.sh"
+    condition: "${SHOW_DASHARO_FIRMWARE}"
+
+  - key: "3"
+    label: "Restore firmware from Dasharo HCL report"
+    callback: "${SCRIPT_DIR}/callbacks/restore-firmware.sh"
+    condition: "${SHOW_RESTORE_FIRMWARE}"
+
+  - key: "4"
+    label: "${DPP_KEYS_LABEL}"
+    callback: "${SCRIPT_DIR}/callbacks/dpp-keys.sh"
+
+  - key: "5"
+    label: "DTS extensions"
+    callback: "${SCRIPT_DIR}/callbacks/dts-extensions.sh"
+    condition: "${SHOW_DTS_EXTENSIONS}"
+
+  - key: "6"
+    label: "Transition Dasharo Firmware"
+    callback: "${SCRIPT_DIR}/callbacks/transition.sh"
+    condition: "${SHOW_TRANSITION}"
+
+  - key: "7"
+    label: "Fuse platform"
+    callback: "${SCRIPT_DIR}/callbacks/fuse.sh"
+    condition: "${SHOW_FUSE}"
+
+footer:
+  - key: "R"
+    label: "reboot"
+    callback: "${SCRIPT_DIR}/callbacks/reboot.sh"
+
+  - key: "P"
+    label: "poweroff"
+    callback: "${SCRIPT_DIR}/callbacks/poweroff.sh"
+
+  - key: "S"
+    label: "enter shell"
+    callback: "${SCRIPT_DIR}/callbacks/shell.sh"
+
+  - key: "K"
+    label: "${SSH_LABEL}"
+    callback: "${SCRIPT_DIR}/callbacks/ssh-toggle.sh"
+
+  - key: "L"
+    label: "${SEND_LOGS_LABEL}"
+    callback: "${SCRIPT_DIR}/callbacks/toggle-logs.sh"
+
+  - key: "C"
+    label: "${DISPLAY_CRED_LABEL}"
+    callback: "${SCRIPT_DIR}/callbacks/toggle-credentials.sh"
+    condition: "${DPP_IS_LOGGED}"
