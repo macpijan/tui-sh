@@ -18,8 +18,7 @@ A simple bash library for creating text-based user interfaces with immediate key
 ## Requirements
 
 - Bash 4.0 or later
-- `yq` - YAML processor
-- `jq` - JSON processor
+- `yq` - YAML processor (mikefarah/yq v4+)
 - Optional: `bats` for running tests
 
 ## Quick Start
@@ -367,41 +366,19 @@ Tested on:
 
 ## Implementation Details
 
-### Why both `yq` and `jq`?
+### YAML Parsing
 
-The library uses both `yq` and `jq` for YAML parsing, which may seem redundant. Here's why:
+The library uses `yq` (mikefarah/yq) to parse YAML configuration files directly:
 
-**Current approach:**
-1. `yq` converts YAML → JSON (once, at config load time)
-2. `jq` parses the JSON into bash arrays (once, at config load time)
-3. Rendering uses **pure bash** (zero external process calls)
+1. Config is loaded once using `yq eval` commands
+2. Data is stored in bash arrays for fast access
+3. Rendering uses **pure bash** (zero external process calls after config load)
 
-**Alternative approaches considered:**
-
-**Option 1: Use only `yq`**
-- Pro: Single dependency
-- Con: Would need to call `yq` multiple times during parsing
-- Con: `yq` is slower than `jq` for JSON queries
-
-**Option 2: Use `yq` with direct output format**
-- Use `yq` to output TSV/CSV directly: `yq eval '.menu[] | .key + "\t" + .label' config.yaml`
-- Pro: Single dependency
-- Con: More complex escaping for special characters
-- Con: Still need multiple `yq` calls for nested structures
-
-**Option 3: Current hybrid approach (chosen)**
-- `yq` once: YAML → JSON (fast, keeps JSON cached)
-- `jq` multiple times: Parse JSON → bash arrays (fast for JSON operations)
-- Rendering: Pure bash (instant, no external processes)
-- Pro: Fastest overall performance (zero external calls during rendering)
-- Pro: `jq` is typically pre-installed on most systems
-- Con: Two dependencies instead of one
-
-**Performance comparison:**
-- Config loading: Once per application start (acceptable overhead)
+**Performance:**
+- Config loading: Multiple `yq` calls at startup (acceptable overhead)
 - Rendering: **Zero external processes** = instant (critical for responsive UI)
 
-The hybrid approach prioritizes rendering performance, which happens on every menu redraw, over a slightly simpler dependency chain.
+This approach prioritizes rendering performance while using a single, widely-available YAML processor.
 
 ## Limitations
 

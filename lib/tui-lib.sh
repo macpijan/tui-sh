@@ -13,7 +13,6 @@ readonly TUI_BLUE='\033[0;36m'  # Cyan, used for borders (matches DTS BLUE)
 readonly TUI_MAX_WIDTH=60  # Maximum width for borders and footer wrapping
 
 # Global variables
-TUI_CONFIG_FILE=""
 TUI_RUNNING=true
 
 # Header variables
@@ -195,6 +194,84 @@ tui_check_condition() {
     [[ -n "$result" && "$result" != "false" && "$result" != "0" ]]
 }
 
+# Helper: Parse header from YAML config
+_tui_parse_header() {
+    local config_file="$1"
+    TUI_HEADER_TITLE=$(yq eval '.header.title // ""' "$config_file")
+    TUI_HEADER_SUBTITLE=$(yq eval '.header.subtitle // ""' "$config_file")
+    TUI_HEADER_LINK=$(yq eval '.header.link // ""' "$config_file")
+}
+
+# Helper: Parse sections and their entries from YAML config
+_tui_parse_sections() {
+    local config_file="$1"
+    local section_idx=0
+
+    # Get number of sections
+    local num_sections
+    num_sections=$(yq eval '.sections | length' "$config_file")
+
+    # Parse each section
+    for ((section_idx=0; section_idx<num_sections; section_idx++)); do
+        local condition label
+        condition=$(yq eval ".sections[$section_idx].condition // \"\"" "$config_file")
+        label=$(yq eval ".sections[$section_idx].label" "$config_file")
+
+        # Store section data (escape pipes in label)
+        TUI_SECTIONS_DATA+=("$condition|${label//|/\\|}")
+
+        # Parse entries for this section
+        local num_entries
+        num_entries=$(yq eval ".sections[$section_idx].entries | length" "$config_file")
+
+        for ((entry_idx=0; entry_idx<num_entries; entry_idx++)); do
+            local entry_cond entry_label entry_value
+            entry_cond=$(yq eval ".sections[$section_idx].entries[$entry_idx].condition // \"\"" "$config_file")
+            entry_label=$(yq eval ".sections[$section_idx].entries[$entry_idx].label" "$config_file")
+            entry_value=$(yq eval ".sections[$section_idx].entries[$entry_idx].value" "$config_file")
+
+            # Store entry data (escape pipes)
+            TUI_ENTRIES_DATA+=("$section_idx|$entry_cond|${entry_label//|/\\|}|${entry_value//|/\\|}")
+        done
+    done
+}
+
+# Helper: Parse menu items from YAML config
+_tui_parse_menu() {
+    local config_file="$1"
+    local num_items
+    num_items=$(yq eval '.menu | length' "$config_file")
+
+    for ((idx=0; idx<num_items; idx++)); do
+        local key condition label callback
+        key=$(yq eval ".menu[$idx].key" "$config_file")
+        condition=$(yq eval ".menu[$idx].condition // \"\"" "$config_file")
+        label=$(yq eval ".menu[$idx].label" "$config_file")
+        callback=$(yq eval ".menu[$idx].callback" "$config_file")
+
+        # Store menu item (escape pipes in label)
+        TUI_MENU_DATA+=("$key|$condition|${label//|/\\|}|$callback")
+    done
+}
+
+# Helper: Parse footer items from YAML config
+_tui_parse_footer() {
+    local config_file="$1"
+    local num_items
+    num_items=$(yq eval '.footer | length' "$config_file")
+
+    for ((idx=0; idx<num_items; idx++)); do
+        local key condition label callback
+        key=$(yq eval ".footer[$idx].key" "$config_file")
+        condition=$(yq eval ".footer[$idx].condition // \"\"" "$config_file")
+        label=$(yq eval ".footer[$idx].label" "$config_file")
+        callback=$(yq eval ".footer[$idx].callback" "$config_file")
+
+        # Store footer item (escape pipes in label)
+        TUI_FOOTER_DATA+=("$key|$condition|${label//|/\\|}|$callback")
+    done
+}
+
 # Load YAML configuration and parse into bash variables
 # Usage: tui_load_config "config.yaml"
 tui_load_config() {
@@ -211,62 +288,17 @@ tui_load_config() {
         return 1
     fi
 
-    if ! command -v jq &>/dev/null; then
-        echo "Error: jq is required but not installed" >&2
-        return 1
-    fi
-
-    TUI_CONFIG_FILE="$config_file"
-
-    # Convert YAML to JSON once
-    local json_config
-    json_config=$(yq eval -o=json "$config_file")
-
-    # Parse header (using @ to safely handle special characters)
-    TUI_HEADER_TITLE=$(echo "$json_config" | jq -r '.header.title // ""')
-    TUI_HEADER_SUBTITLE=$(echo "$json_config" | jq -r '.header.subtitle // ""')
-    TUI_HEADER_LINK=$(echo "$json_config" | jq -r '.header.link // ""')
-
     # Clear arrays
     TUI_SECTIONS_DATA=()
     TUI_ENTRIES_DATA=()
     TUI_MENU_DATA=()
     TUI_FOOTER_DATA=()
 
-    # Parse sections
-    local section_idx=0
-    while IFS='|' read -r condition label; do
-        if [[ -z "$label" && -z "$condition" ]]; then
-            continue
-        fi
-        TUI_SECTIONS_DATA+=("$condition|$label")
-
-        # Parse entries for this section
-        while IFS='|' read -r entry_cond entry_label entry_value; do
-            if [[ -z "$entry_label" && -z "$entry_value" ]]; then
-                continue
-            fi
-            TUI_ENTRIES_DATA+=("$section_idx|$entry_cond|$entry_label|$entry_value")
-        done < <(echo "$json_config" | jq -r ".sections[$section_idx].entries[]? | \"\(.condition // \"\")|\" + (.label | gsub(\"\\\\|\"; \"\\\\|\" )) + \"|\" + (.value | gsub(\"\\\\|\"; \"\\\\|\"))")
-
-        ((section_idx++))
-    done < <(echo "$json_config" | jq -r '.sections[]? | "\(.condition // "")|" + (.label | gsub("\\|"; "\\|"))')
-
-    # Parse menu items
-    while IFS='|' read -r key condition label callback; do
-        if [[ -z "$key" ]]; then
-            continue
-        fi
-        TUI_MENU_DATA+=("$key|$condition|$label|$callback")
-    done < <(echo "$json_config" | jq -r '.menu[]? | .key + "|" + (.condition // "") + "|" + (.label | gsub("\\|"; "\\|")) + "|" + .callback')
-
-    # Parse footer items
-    while IFS='|' read -r key condition label callback; do
-        if [[ -z "$key" ]]; then
-            continue
-        fi
-        TUI_FOOTER_DATA+=("$key|$condition|$label|$callback")
-    done < <(echo "$json_config" | jq -r '.footer[]? | .key + "|" + (.condition // "") + "|" + (.label | gsub("\\|"; "\\|")) + "|" + .callback')
+    # Parse each section using helper functions
+    _tui_parse_header "$config_file"
+    _tui_parse_sections "$config_file"
+    _tui_parse_menu "$config_file"
+    _tui_parse_footer "$config_file"
 }
 
 # Render header section
